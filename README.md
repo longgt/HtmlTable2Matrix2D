@@ -28,6 +28,31 @@ Transform HTML table to 2D matrix, using matrix for some tasks such as merge cel
 
 `The index of column in HTML table is [the count of positive value before it in matrix + 1]`
 
+## Table processing
+
+### Delete column
+
+Assume y is index of column target of deleting.
+
+1. Transform y to absolute position in matrix (called ay)
+2. Traverse matrix from top to bottom, identify cell connected to ay
+  * If cell value is positive
+    * If value of next cell is positive, cell is not colspan, just delete cell
+    * If value is negative, cell is colspan, just shift right value of current cell one column (identify cell in html table and subtract colspan by 1)
+  * If cell value is negative, cell is colspan, just delete value in matrix (identify cell in html table and subtract colspan by 1)
+  
+### Delete row
+
+Assume x is index of row target of deleting
+
+1. Traverse matrix from left to right, identify cell connected to x
+  * If cell value is positive
+    * If value of cell below is positive, cell is not rowspan, just delete cell
+    * If value of cell below is negative, cell is rowspan, just shift down value of current cell one row (create cell in row below having rowspan value subtract by 1)
+  * If cell value is negative
+    * If value is -2, which idicates colspan, just skip it
+    * If value is -1, just delete it (traverse up to find root position, find cell in html and subtract rowspan by 1)
+
 ## Demo
 
 https://plnkr.co/edit/wmxo1xoufRLlOVSnknM8?p=preview
