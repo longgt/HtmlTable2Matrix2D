@@ -21,10 +21,10 @@ Transform HTML table to 2D matrix, using matrix for some tasks such as merge cel
 
 1. Calculate td position in matrix
 2. Following given direction, do the following task
-2.1 If value is -2, cell is colspan, go to left until getting -1 or positive value
-2.2 If value is -1, cell is rowspan, go to up until getting positive value
-2.3 The position of positive value after done 2.1 and 2.2 task is the result.
-2.4 Transform the position of y column in the result to the index of column in HTML table
+  * If value is -2, cell is colspan, go to left until getting -1 or positive value
+  * If value is -1, cell is rowspan, go to up until getting positive value
+  * The position of positive value after done 2.1 and 2.2 task is the result.
+  * Transform the position of y column in the result to the index of column in HTML table
 
 `The index of column in HTML table is [the count of positive value before it in matrix + 1]`
 
