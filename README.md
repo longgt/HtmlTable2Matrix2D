@@ -55,4 +55,4 @@ Assume x is index of row target of deleting
 
 ## Demo
 
-https://run.plnkr.co/preview/ck191mg3r0005396b38luc08t/
+https://next.plnkr.co/edit/73DjyuhZ5WJ80N41?preview
