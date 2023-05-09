@@ -1,7 +1,7 @@
 /**
- * MIT License
+ * @license MIT License
  *
- * Copyright (c) 2017 longgt
+ * Copyright (c) 2023 longgt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  **/
-var Table2Matrix = (function(my, $) {
-    my.mtTable = (function($) {
-        var mt;
-        var debug;
+(function() {
+    let my = {};
+    my.mtTable = (function() {
+        let mt;
+        let debug;
 
         /**
          * Transform relative position to absolute
          */
         function r2aPosition(row, col, mt) {
-            var result = col;
-            var cnt = -1;
-            var colCnt = mt[0].length;
+            let result = col;
+            let cnt = -1;
+            let colCnt = mt[0].length;
 
-            for (var i = 0; i < colCnt; i++) {
+            for (let i = 0; i < colCnt; i++) {
                 if (mt[row][i] > 0) {
                     cnt++;
                 }
@@ -50,9 +51,9 @@ var Table2Matrix = (function(my, $) {
          * Transform absolute position to relative
          */
         function a2rPosition(row, col, mt) {
-            var cnt = 0;
+            let cnt = 0;
 
-            for (var i = 0; i < col; i++) {
+            for (let i = 0; i < col; i++) {
                 if (mt[row][i] < 0) {
                     cnt++;
                 }
@@ -64,12 +65,12 @@ var Table2Matrix = (function(my, $) {
          * Detect relative cell followed by direction (for merge cell)
          */
         function detectMergeCell(row, col, direction, mt) {
-            var result = [];
+            let result = [];
 
             if (direction == 'left') {
                 if (col > 0) {
-                    var colIdx = col - 1;
-                    var rowIdx = row;
+                    let colIdx = col - 1;
+                    let rowIdx = row;
                     while (colIdx >= 0 && mt[rowIdx][colIdx] == -2) {
                         colIdx--;
                     }
@@ -81,8 +82,8 @@ var Table2Matrix = (function(my, $) {
                 }
             } else if (direction == 'right') {
                 if (col + 1 < mt[0].length) {
-                    var colIdx = col + 1;
-                    var rowIdx = row;
+                    let colIdx = col + 1;
+                    let rowIdx = row;
                     while (rowIdx >= 0 && mt[rowIdx][colIdx] == -1) {
                         rowIdx--;
                     }
@@ -91,8 +92,8 @@ var Table2Matrix = (function(my, $) {
                 }
             } else if (direction == 'up') {
                 if (row > 0) {
-                    var colIdx = col;
-                    var rowIdx = row - 1;
+                    let colIdx = col;
+                    let rowIdx = row - 1;
                     while (colIdx >= 0 && mt[rowIdx][colIdx] == -2) {
                         colIdx--;
                     }
@@ -104,8 +105,8 @@ var Table2Matrix = (function(my, $) {
                 }
             } else if (direction == 'down') {
                 if (row + 1 < mt.length) {
-                    var colIdx = col;
-                    var rowIdx = row + 1;
+                    let colIdx = col;
+                    let rowIdx = row + 1;
                     while (colIdx >= 0 && mt[rowIdx][colIdx] == -2) {
                         colIdx--;
                     }
@@ -129,9 +130,9 @@ var Table2Matrix = (function(my, $) {
             if (!value || value.length == 0 || value[0] < 0 || value[1] < 0) {
                 return;
             }
-            var existed = false;
-            var length = arr.length;
-            for (var i = 0; i < length; i++) {
+            let existed = false;
+            let length = arr.length;
+            for (let i = 0; i < length; i++) {
                 v = arr[i];
                 if (v[0] == value[0] && v[1] == value[1]) {
                     existed = true;
@@ -147,11 +148,11 @@ var Table2Matrix = (function(my, $) {
          * Find previous cell on row
          */
         function prevCell(row, col, mt) {
-            var result = [];
+            let result = [];
             result.push(row);
 
             if (col >= 0) {
-                var colIdx = col;
+                let colIdx = col;
                 while (colIdx >= 0 && mt[row][colIdx] < 0) {
                     colIdx--;
                 }
@@ -163,77 +164,81 @@ var Table2Matrix = (function(my, $) {
         }
 
         return {
+            // Reset internal state
+            reset: function() {
+                this.mt = [];
+                this.debug = false;
+            },
+
             /**
              * Load table structure, convert to matrix
              */
             load: function(table, escapeCls, debug) {
                 if (typeof Array.fill == 'undefined') {
                     Array.prototype.fill = function(value) {
-                        var length = this.length;
-                        for (var i = 0; i < length; i++) {
+                        let length = this.length;
+                        for (let i = 0; i < length; i++) {
                             this[i] = value;
                         }
                         return this;
                     }
                 }
-                var $table = $(table);
-                var ts = [];
-                var escapeClsArr = escapeCls ? escapeCls.split(',') : [];
-                $table.find('tr').each(function() {
-                    var $tr = $(this);
-                    var $row = [];
-                    $tr.find('th,td').each(function() {
-                        var $td = $(this);
+                let tableEle = typeof (table) === 'object' ? table : document.querySelector(table);
+                let ts = [];
+                let escapeClsArr = escapeCls ? escapeCls.split(',') : [];
+                tableEle.querySelectorAll('tr').forEach(trEle => {
+                    let rowArr = [];
+                    trEle.querySelectorAll('th,td').forEach(tdEle => {
                         if (escapeClsArr.length > 0) {
-                            for (var i = 0, len = escapeClsArr.length; i < len; i++) {
-                                if ($td.hasClass(escapeClsArr[i])) {
+                            for (let i = 0, len = escapeClsArr.length; i < len; i++) {
+                                if (tdEle.classList.contains(escapeClsArr[i])) {
                                     return;
                                 }
                             }
                         }
-                        var $cell = [];
-                        $cell.push(~~$td.attr('rowSpan') || 1);
-                        $cell.push(~~$td.attr('colSpan') || 1);
-                        $row.push($cell);
+                        let cellArr = [];
+                        cellArr.push(~~tdEle.getAttribute('rowspan') || 1);
+                        cellArr.push(~~tdEle.getAttribute('colspan') || 1);
+                        rowArr.push(cellArr);
                     });
-                    ts.push($row);
+                    ts.push(rowArr);
                 });
 
-                var mt = [];
-                var rowCnt = ts.length;
-                var colCnt = 0;
+                let mt = [];
+                let rowCnt = ts.length;
+                let colCnt = 0;
 
                 //Get column counter in first row
-                for (var i = 0, len = ts.length > 0 ? ts[0].length : 0; i < len; i++) {
+                for (let i = 0, len = ts.length > 0 ? ts[0].length : 0; i < len; i++) {
                     colCnt += ts[0][i][1];
                 }
 
                 //Fill matrix with same value for each cell in row
-                for (var i = 0; i < rowCnt; i++) {
-                    var $row = new Array(colCnt).fill(i + 1);
-                    mt.push($row);
+                for (let i = 0; i < rowCnt; i++) {
+                    let rowArr = new Array(colCnt).fill(i + 1);
+                    mt.push(rowArr);
                 }
                 //Figure out HTML table structure with 2D matrix
-                for (var i = 0; i < rowCnt; i++) {
-                    var $row = ts[i];
-                    var tIndex = 0;
-                    var len = $row.length;
-                    for (var j = 0; j < len; j++) {
-                        var $col = $row[j];
+                for (let i = 0; i < rowCnt; i++) {
+                    let rowArr = ts[i];
+                    let tIndex = 0;
+                    let len = rowArr.length;
+                    for (let j = 0; j < len; j++) {
+                        let colArr = rowArr[j];
                         //Skip merged cell
                         while (mt[i][tIndex] < 0) {
                             tIndex++;
                         }
-                        var rowSpan = $col[0];
-                        var colSpan = $col[1];
+                        let rowSpan = colArr[0];
+                        let colSpan = colArr[1];
                         //-2 indicate for colspan
-                        for (var k = 1; k < colSpan; k++) {
+                        for (let k = 1; k < colSpan; k++) {
                             mt[i][tIndex + k] = -2;
                         }
-                        for (var k = 1; k < rowSpan; k++) {
+                        for (let k = 1; k < rowSpan; k++) {
                             //-1 indicate for rowspan
                             mt[i + k][tIndex] = -1;
-                            for (var l = 1; l < colSpan; l++) {
+                            for (let l = 1; l < colSpan; l++) {
                                 //-2 indicate for colspan
                                 mt[i + k][tIndex + l] = -2;
                             }
@@ -251,11 +256,11 @@ var Table2Matrix = (function(my, $) {
              * @param direction top, right, bottom, left
              */
             getRelCell: function(row, col, direction) {
-                var arr = [];
-                var acol = r2aPosition(row, col, this.mt);
-                var rowSpan = 1;
-                var colSpan = 1;
-                var mt = this.mt;
+                let arr = [];
+                let acol = r2aPosition(row, col, this.mt);
+                let rowSpan = 1;
+                let colSpan = 1;
+                let mt = this.mt;
 
                 while (acol + colSpan < mt[row].length && mt[row][acol + colSpan] == -2) {
                     colSpan++;
@@ -263,22 +268,22 @@ var Table2Matrix = (function(my, $) {
                 while (row + rowSpan < mt.length && mt[row + rowSpan][acol] == -1) {
                     rowSpan++;
                 }
-                for (var i = 0; i < rowSpan; i++) {
-                    for (var j = 0; j < colSpan; j++) {
+                for (let i = 0; i < rowSpan; i++) {
+                    for (let j = 0; j < colSpan; j++) {
                         if (j == 0 && direction == 'left') {
-                            var ret = detectMergeCell(row + i, acol, 'left', mt);
+                            let ret = detectMergeCell(row + i, acol, 'left', mt);
                             add(arr, ret);
                         }
                         if (j == colSpan - 1 && direction == 'right') {
-                            var ret = detectMergeCell(row + i, acol + j, 'right', mt);
+                            let ret = detectMergeCell(row + i, acol + j, 'right', mt);
                             add(arr, ret);
                         }
                         if (i == 0 && direction == 'up') {
-                            var ret = detectMergeCell(row, acol + j, 'up', mt);
+                            let ret = detectMergeCell(row, acol + j, 'up', mt);
                             add(arr, ret);
                         }
                         if (i == rowSpan - 1 && direction == 'down') {
-                            var ret = detectMergeCell(row + i, acol + j, 'down', mt);
+                            let ret = detectMergeCell(row + i, acol + j, 'down', mt);
                             add(arr, ret);
                         }
                     }
@@ -292,13 +297,13 @@ var Table2Matrix = (function(my, $) {
              * @param direction top, right, bottom, left
              */
             getMultiRelCell: function(lst, direction) {
-                var arr = [];
+                let arr = [];
                 if (lst) {
-                    for (var i = 0, len = lst.length; i < len; i++) {
-                        var c = lst[i];
-                        var ret = this.getRelCell(c[0], c[1], direction);
+                    for (let i = 0, len = lst.length; i < len; i++) {
+                        let c = lst[i];
+                        let ret = this.getRelCell(c[0], c[1], direction);
                         if (ret.length > 0) {
-                            for (var j = 0, retLen = ret.length; j < retLen; j++) {
+                            for (let j = 0, retLen = ret.length; j < retLen; j++) {
                                 add(arr, ret[j]);
                             }
                         }
@@ -311,18 +316,18 @@ var Table2Matrix = (function(my, $) {
              * Get html structure (for render)
              */
             getHtmlStructure: function() {
-                var ts = [];
-                var mt = this.mt;
+                let ts = [];
+                let mt = this.mt;
                 rowCnt = mt.length;
 
-                for (var i = 0; i < rowCnt; i++) {
-                    var t = [];
+                for (let i = 0; i < rowCnt; i++) {
+                    let t = [];
                     colCnt = mt[i].length;
 
-                    for (var j = 0; j < colCnt;) {
+                    for (let j = 0; j < colCnt;) {
                         if (mt[i][j] >= 0) {
-                            var colSpan = 1;
-                            var rowSpan = 1;
+                            let colSpan = 1;
+                            let rowSpan = 1;
 
                             while (j + colSpan < colCnt && mt[i][j + colSpan] == -2) {
                                 colSpan++;
@@ -331,7 +336,7 @@ var Table2Matrix = (function(my, $) {
                                 rowSpan++;
                             }
 
-                            var c = [];
+                            let c = [];
                             c.push(rowSpan);
                             c.push(colSpan);
                             t.push(c);
@@ -347,9 +352,9 @@ var Table2Matrix = (function(my, $) {
                 }
                 if (this.debug) {
                     //Debug only
-                    for (var i = 0; i < mt.length; i++) {
-                        var arr = [];
-                        for (var j = 0; j < mt[i].length; j++) {
+                    for (let i = 0; i < mt.length; i++) {
+                        let arr = [];
+                        for (let j = 0; j < mt[i].length; j++) {
                             arr.push(mt[i][j] >= 0 ? (' ' + mt[i][j]) : mt[i][j]);
                         }
                         console.log(arr.join(','));
@@ -359,36 +364,36 @@ var Table2Matrix = (function(my, $) {
                 return ts;
             },
 
-            /** 
+            /**
              * Get cell in deleting column
              */
             deleteColAt: function(row, col, last) {
-                var acol = r2aPosition(row, col, this.mt);
-                var mt = this.mt;
-                var length = mt.length;
-                var result = [];
+                let acol = r2aPosition(row, col, this.mt);
+                let mt = this.mt;
+                let length = mt.length;
+                let result = [];
 
                 if (last == true) {
                     while (acol + 1 < mt[row].length && mt[row][acol + 1] == -2) {
                         acol++;
                     }
                 }
-                for (var i = 0; i < length; i++) {
+                for (let i = 0; i < length; i++) {
                     if (mt[i][acol] < 0) {
-                        var rowIdx = i;
-                        var colIdx = acol;
+                        let rowIdx = i;
+                        let colIdx = acol;
                         while (colIdx >= 0 && mt[rowIdx][colIdx] == -2) {
                             colIdx--;
                         }
                         while (rowIdx >= 0 && mt[rowIdx][colIdx] == -1) {
                             rowIdx--;
                         }
-                        var changed = [];
+                        let changed = [];
                         changed.push(rowIdx);
                         changed.push(colIdx >= 0 ? a2rPosition(rowIdx, colIdx, this.mt) : colIdx);
                         add(result, changed);
                     } else {
-                        var changed = [];
+                        let changed = [];
                         changed.push(i);
                         changed.push(a2rPosition(i, acol, this.mt));
                         add(result, changed);
@@ -402,27 +407,27 @@ var Table2Matrix = (function(my, $) {
              * Get cell in deleting target row
              */
             deleteRowAt: function(row) {
-                var mt = this.mt;
-                var length = mt.length;
-                var result = [];
+                let mt = this.mt;
+                let length = mt.length;
+                let result = [];
 
                 if (row >= 0 && row < mt.length) {
-                    for (var j = 0; j < mt[row].length; j++) {
+                    for (let j = 0; j < mt[row].length; j++) {
                         if (mt[row][j] < 0) {
-                            var rowIdx = row;
-                            var colIdx = j;
+                            let rowIdx = row;
+                            let colIdx = j;
                             while (colIdx >= 0 && mt[rowIdx][colIdx] == -2) {
                                 colIdx--;
                             }
                             while (rowIdx >= 0 && mt[rowIdx][colIdx] == -1) {
                                 rowIdx--;
                             }
-                            var changed = [];
+                            let changed = [];
                             changed.push(rowIdx);
                             changed.push(colIdx >= 0 ? a2rPosition(rowIdx, colIdx, this.mt) : colIdx);
                             add(result, changed);
                         } else {
-                            var changed = [];
+                            let changed = [];
                             changed.push(row);
                             changed.push(a2rPosition(row, j, this.mt));
                             add(result, changed);
@@ -437,8 +442,8 @@ var Table2Matrix = (function(my, $) {
              * Get insertable cell on next row
              */
             insertableCellNextRow: function(row, col) {
-                var acol = r2aPosition(row, col, this.mt);
-                var result = [];
+                let acol = r2aPosition(row, col, this.mt);
+                let result = [];
                 if (acol >= 0 && row < this.mt.length - 1) {
                     result = prevCell(row + 1, acol, this.mt);
                 }
@@ -449,24 +454,24 @@ var Table2Matrix = (function(my, $) {
              * Get insertable cell on row
              */
             insertableCell: function(row, col) {
-                var acol = r2aPosition(row, col, this.mt);
+                let acol = r2aPosition(row, col, this.mt);
                 return prevCell(row, acol, this.mt);
             },
 
-            /** 
+            /**
              * Get previous cell (also support cell with rowspan)
              */
             beforeCell: function(row, col, pRowSpan) {
-                var acol = r2aPosition(row, col, this.mt);
-                var mt = this.mt;
-                var result = [];
-                for (var i = 0; i < pRowSpan; i++) {
-                    var colIdx = acol - 1;
-                    var rowIdx = row + i;
+                let acol = r2aPosition(row, col, this.mt);
+                let mt = this.mt;
+                let result = [];
+                for (let i = 0; i < pRowSpan; i++) {
+                    let colIdx = acol - 1;
+                    let rowIdx = row + i;
                     while (colIdx >= 0 && mt[rowIdx][colIdx] < 0) {
                         colIdx--;
                     }
-                    var c = [];
+                    let c = [];
                     c.push(rowIdx);
                     c.push(colIdx >= 0 ? a2rPosition(rowIdx, colIdx, this.mt) : colIdx);
                     result.push(c);
@@ -485,7 +490,7 @@ var Table2Matrix = (function(my, $) {
              * Get row size
              */
             getRowSize: function(row) {
-                var result = 0;
+                let result = 0;
                 if (row >= 0 && row < this.mt.length) {
                     result = this.mt[row].length;
                 }
@@ -496,8 +501,8 @@ var Table2Matrix = (function(my, $) {
              * Check cell is exists
              */
             hasCell: function(row, col) {
-                var acol = r2aPosition(row, col, this.mt);
-                var result = false;
+                let acol = r2aPosition(row, col, this.mt);
+                let result = false;
                 if (row >= 0 && row < this.mt.length && acol >= 0 && acol < this.mt[row].length) {
                     result = this.mt[row][acol] > 0;
                 }
@@ -517,36 +522,36 @@ var Table2Matrix = (function(my, $) {
              * Otherwise, throw error
              */
             extendSize: function(row, col, nRow, nCol) {
-                var acol = r2aPosition(row, col, this.mt);
-                var mt = this.mt;
-                var result = {};
-                var errorCode = 0;
-                var mergeCells = [];
-                var splitCells = [];
+                let acol = r2aPosition(row, col, this.mt);
+                let mt = this.mt;
+                let result = {};
+                let errorCode = 0;
+                let mergeCells = [];
+                let splitCells = [];
 
                 //Detect size of current cell
-                var cellRowSize = 1;
-                var cellColSize = 1;
-                for (var j = acol + 1; j < mt[row].length && mt[row][j] == -2; j++) {
+                let cellRowSize = 1;
+                let cellColSize = 1;
+                for (let j = acol + 1; j < mt[row].length && mt[row][j] == -2; j++) {
                     cellColSize++;
                 }
-                for (var i = row + 1; i < mt.length && mt[i][acol] == -1; i++) {
+                for (let i = row + 1; i < mt.length && mt[i][acol] == -1; i++) {
                     cellRowSize++;
                 }
 
                 //Merge cell
                 if (nRow > cellRowSize || nCol > cellColSize) {
                     //Top left
-                    var topLeft = {
+                    let topLeft = {
                         row: row,
                         col: acol
                     };
 
                     //Top right
-                    var cnt = 1;
-                    var topRight;
+                    let cnt = 1;
+                    let topRight;
                     if (nCol > cellColSize) {
-                        for (var j = acol + 1; j < mt[row].length; j++) {
+                        for (let j = acol + 1; j < mt[row].length; j++) {
                             if (mt[row][j] == -1) {
                                 break;
                             }
@@ -571,9 +576,9 @@ var Table2Matrix = (function(my, $) {
 
                     //Bottom left
                     cnt = 1;
-                    var bottomLeft;
+                    let bottomLeft;
                     if (nRow > cellRowSize) {
-                        for (var i = row + 1; i < mt.length; i++) {
+                        for (let i = row + 1; i < mt.length; i++) {
                             if (mt[i][acol] == -2) {
                                 break;
                             }
@@ -597,15 +602,15 @@ var Table2Matrix = (function(my, $) {
                     }
 
 
-                    var maxCellBound = {
+                    let maxCellBound = {
                         row: row + cellRowSize - 1,
                         col: acol + cellColSize - 1
                     };
 
                     //Check from bottom-left (row)
                     if (bottomLeft.row + 1 < mt.length) {
-                        var nextRow = bottomLeft.row + 1;
-                        for (var i = bottomLeft.col; i <= topRight.col; i++) {
+                        let nextRow = bottomLeft.row + 1;
+                        for (let i = bottomLeft.col; i <= topRight.col; i++) {
                             //Check but excluding cells existed in current cell range
                             if ((nextRow > maxCellBound.row || i > maxCellBound.col) && mt[nextRow][i] == -1) {
                                 errorCode = -1;
@@ -614,8 +619,8 @@ var Table2Matrix = (function(my, $) {
                         }
                     }
                     //Check from top-right (column)
-                    var nextCol = topRight.col + 1;
-                    for (var i = topRight.row; i <= bottomLeft.row; i++) {
+                    let nextCol = topRight.col + 1;
+                    for (let i = topRight.row; i <= bottomLeft.row; i++) {
                         //Check but excluding cells existed in current cell range
                         if ((i > maxCellBound.row || nextCol > maxCellBound.col) && nextCol < mt[i].length && mt[i][nextCol] == -2) {
                             errorCode = -2;
@@ -623,16 +628,16 @@ var Table2Matrix = (function(my, $) {
                         }
                     }
 
-                    var bottomRight = {
+                    let bottomRight = {
                         row: bottomLeft.row,
                         col: topRight.col
                     };
 
                     //Get all cell in extending range
-                    for (var i = topLeft.row; i <= bottomLeft.row; i++) {
-                        for (var j = topLeft.col; j <= topRight.col; j++) {
+                    for (let i = topLeft.row; i <= bottomLeft.row; i++) {
+                        for (let j = topLeft.col; j <= topRight.col; j++) {
                             if (mt[i][j] > 0) {
-                                var c = [];
+                                let c = [];
                                 c.push(i);
                                 c.push(a2rPosition(i, j, this.mt));
                                 add(mergeCells, c);
@@ -642,9 +647,9 @@ var Table2Matrix = (function(my, $) {
                 }
                 //Split cell
                 if (nRow < cellRowSize || nCol < cellColSize) {
-                    for (var cntR = 0; cntR < cellRowSize; cntR++) {
-                        var cnt = 0;
-                        var startCell;
+                    for (let cntR = 0; cntR < cellRowSize; cntR++) {
+                        let cnt = 0;
+                        let startCell;
 
                         //Fill up cell with negative value in matrix after resized with positive value (insert cell)
                         if (cntR < nRow) {
@@ -677,7 +682,7 @@ var Table2Matrix = (function(my, $) {
                 return result;
             }
         }
-    }(jQuery));
+    }());
 
-    return my;
-}(Table2Matrix || {}, jQuery));
+    window.Table2Matrix = my;
+}());
