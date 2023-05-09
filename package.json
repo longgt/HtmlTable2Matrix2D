@@ -1,0 +1,23 @@
+{
+  "name": "htmltable2matrix2d",
+  "version": "1.0.0",
+  "description": "Transform HTML table to 2D matrix, using matrix for some tasks such as merge cell, delete row, delete column...",
+  "main": "mtable.js",
+  "scripts": {
+    "minify": "terser --compress --mangle --comment --keep-fnames --ecma 2015 -o mtable.min.js -- mtable.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/longgt/HtmlTable2Matrix2D.git"
+  },
+  "author": "longgt <gtlong.hcmus@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/longgt/HtmlTable2Matrix2D/issues"
+  },
+  "homepage": "https://github.com/longgt/HtmlTable2Matrix2D#readme",
+  "devDependencies": {
+    "terser": "^5.17.2"
+  }
+}
