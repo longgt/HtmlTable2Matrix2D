@@ -4,7 +4,7 @@
   "description": "Transform HTML table to 2D matrix, using matrix for some tasks such as merge cell, delete row, delete column...",
   "main": "mtable.js",
   "scripts": {
-    "minify": "terser --compress --mangle --comment --keep-fnames --ecma 2015 -o mtable.min.js -- mtable.js",
+    "minify": "esbuild mtable.js --minify --sourcemap --keep-names --target=es6 --outfile=dist/mtable.min.js",
     "test": "jest"
   },
   "repository": {
@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/longgt/HtmlTable2Matrix2D#readme",
   "devDependencies": {
+    "esbuild": "0.21.5",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
-    "jsdom": "^22.0.0",
-    "terser": "^5.17.2"
+    "jsdom": "^22.0.0"
   }
 }
